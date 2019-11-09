@@ -55,3 +55,33 @@
   - 将来を見据えたテスト設計
   - 大規模プログラミング
   - 品質保証
+
+## Chapter 01 - ブール論理
+
+### プリミティブゲート
+
+- NAND: NOT AND．論理積の否定．
+
+```hdl
+CHIP Nand {
+    IN a, b;
+    OUT out;
+
+    PARTS:
+    /*
+    if a = b = 1:
+        then out = 0;
+    else out = 1;
+    */
+}
+```
+
+### 実装
+
+- NOT
+- AND(/NAND)
+- OR/XOR
+- マルチプレクサ/デマルチプレクサ
+- 多ビット NOT/AND/OR
+- 多ビットマルチプレクサ
+- 複数入力ゲート

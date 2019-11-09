@@ -18,5 +18,14 @@ CHIP Mux8Way16 {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+        // choose based on 1st bit sel[0]: (a or b), (c or d), (e or f), (g or h)
+        Mux16(a=a, b=b, sel=sel[0], out=AorBSelected);
+        Mux16(a=c, b=d, sel=sel[0], out=CorDSelected);
+        Mux16(a=e, b=f, sel=sel[0], out=EorFSelected);
+        Mux16(a=g, b=h, sel=sel[0], out=GorHSelected);
+        // choose based on 2nd bit sel[1]
+        Mux16(a=AorBSelected, b=CorDSelected, sel=sel[1], out=ABCDSelected);
+        Mux16(a=EorFSelected, b=GorHSelected, sel=sel[1], out=EFGHSelected);
+        // choose based on tail last sel[2]
+        Mux16(a=ABCDSelected, b=EFGHSelected, sel=sel[2], out=out);
 }

@@ -2,6 +2,7 @@
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
 // File name: projects/01/DMux8Way.hdl
+// cf: https://github.com/whostolebenfrog/The-Elements-of-Computing-Systems/blob/master/project1/DMux8Way.hdl
 
 /**
  * 8-way demultiplexor:
@@ -9,12 +10,29 @@
  *                            {0, in, 0, 0, 0, 0, 0, 0} if sel == 001
  *                            etc.
  *                            {0, 0, 0, 0, 0, 0, 0, in} if sel == 111
+ *
+ *   sel[2]  sel[1]  sel[0]  ||  a   b   c   d   e   f   g   h
+ *   0       0       0       ||  in  0   0   0   0   0   0   0
+ *   0       0       1       ||  0   in  0   0   0   0   0   0
+ *   0       1       0       ||  0   0   in  0   0   0   0   0
+ *   0       1       1       ||  0   0   0   in  0   0   0   0
+ *   1       0       0       ||  0   0   0   0   in  0   0   0
+ *   1       0       1       ||  0   0   0   0   0   in  0   0
+ *   1       1       0       ||  0   0   0   0   0   0   in  0
+ *   1       1       1       ||  0   0   0   0   0   0   0   in
  */
-
 CHIP DMux8Way {
     IN in, sel[3];
     OUT a, b, c, d, e, f, g, h;
 
     PARTS:
-    // Put your code here:
+        DMux(in=in, sel=sel[0], a=splitACEG, b=splitBDFH);
+        // split A, C, E, G
+        DMux(in=splitACEG, sel=sel[1], a=splitAE, b=splitCG);
+        DMux(in=splitAE, sel=sel[2], a=a, b=e);
+        DMux(in=splitCG, sel=sel[2], a=c, b=g);
+        // split B, D, F, H
+        DMux(in=splitBDFH, sel=sel[1], a=splitBF, b=splitDH);
+        DMux(in=splitBF, sel=sel[2], a=b, b=f);
+        DMux(in=splitDH, sel=sel[2], a=d, b=h);
 }
