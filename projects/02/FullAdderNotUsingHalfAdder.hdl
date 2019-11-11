@@ -1,0 +1,31 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/02/FullAdderNotUsingHalfAdder.hdl
+
+/**
+ * Computes the sum of three bits.
+ * cf: https://www.elprocus.com/half-adder-and-full-adder/
+ */
+
+CHIP FullAdderNotUsingHalfAdder {
+    IN a, b, c;  // 1-bit inputs
+    OUT sum,     // Right bit of a + b + c
+        carry;   // Left bit of a + b + c
+
+    PARTS:
+        // if NOT using Half Adder
+        And3(a=a, b=b, c=c, out=andABC)
+        
+        // sum(0 bit)
+        Nand(a=a, b=b, out=nandAB);
+        Or(a=a, b=b, out=orAB);
+        Xor(a=orAB, b=c, out=xorCorAB);
+        And(a=nandAB, b=xorCorAB, out=sum1);
+        Or(a=andABC, b=sum1, out=sum);
+        
+        // carry(1 bit)
+        // if the number of 1 is more than 2, carry = 1
+        Or(a=andAB, b=andBC, out=or1);
+        Or(a=andAC, b=or1, out=carry);
+}

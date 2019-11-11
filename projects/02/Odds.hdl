@@ -1,0 +1,11 @@
+/*
+ * Get if the number of 1 is 'odds' or not
+*/
+
+CHIP Odds {
+    IN a, b;
+    OUT out;
+
+    PARTS:
+        Xor(a=a, b=b, out=isOdd);
+}

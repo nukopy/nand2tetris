@@ -1,2 +1,10 @@
+# nand2tetris
 tools/
+
+# vscode
+.vscode
 *.code-workspace
+
+# C++
+*.dSYM
+notes/*.out
