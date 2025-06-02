@@ -30,3 +30,8 @@ sh ./simulators/tools/HardwareSimulator.sh
 ### Part II: Software
 
 TBD
+
+## Links
+
+- Nand2Tetris Software Suite
+  - https://www.nand2tetris.org/software
