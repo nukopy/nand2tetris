@@ -5,12 +5,58 @@
 /**
  * 16-bit And gate:
  * for i = 0, ..., 15:
- * out[i] = a[i] And b[i] 
+ * out[i] = a[i] And b[i]
  */
 CHIP And16 {
     IN a[16], b[16];
     OUT out[16];
 
     PARTS:
-    //// Replace this comment with your code.
+    Nand(a=a[0], b=b[0], out=outNand0);
+    Not(in=outNand0, out=out[0]);
+
+    Nand(a=a[1], b=b[1], out=outNand1);
+    Not(in=outNand1, out=out[1]);
+
+    Nand(a=a[2], b=b[2], out=outNand2);
+    Not(in=outNand2, out=out[2]);
+
+    Nand(a=a[3], b=b[3], out=outNand3);
+    Not(in=outNand3, out=out[3]);
+
+    Nand(a=a[4], b=b[4], out=outNand4);
+    Not(in=outNand4, out=out[4]);
+
+    Nand(a=a[5], b=b[5], out=outNand5);
+    Not(in=outNand5, out=out[5]);
+
+    Nand(a=a[6], b=b[6], out=outNand6);
+    Not(in=outNand6, out=out[6]);
+
+    Nand(a=a[7], b=b[7], out=outNand7);
+    Not(in=outNand7, out=out[7]);
+
+    Nand(a=a[8], b=b[8], out=outNand8);
+    Not(in=outNand8, out=out[8]);
+
+    Nand(a=a[9], b=b[9], out=outNand9);
+    Not(in=outNand9, out=out[9]);
+
+    Nand(a=a[10], b=b[10], out=outNand10);
+    Not(in=outNand10, out=out[10]);
+
+    Nand(a=a[11], b=b[11], out=outNand11);
+    Not(in=outNand11, out=out[11]);
+
+    Nand(a=a[12], b=b[12], out=outNand12);
+    Not(in=outNand12, out=out[12]);
+
+    Nand(a=a[13], b=b[13], out=outNand13);
+    Not(in=outNand13, out=out[13]);
+
+    Nand(a=a[14], b=b[14], out=outNand14);
+    Not(in=outNand14, out=out[14]);
+
+    Nand(a=a[15], b=b[15], out=outNand15);
+    Not(in=outNand15, out=out[15]);
 }
