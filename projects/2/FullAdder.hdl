@@ -11,5 +11,9 @@ CHIP FullAdder {
         carry;   // Left bit of a + b + c
 
     PARTS:
-    //// Replace this comment with your code.
+    HalfAdder(a=a, b=b, sum=sumAB, carry=carryAB);
+    HalfAdder(a=sumAB, b=c, sum=sum, carry=carryABC);
+    // HalAdder(a=sumAB, b=c) の段階で最下位 bit、つまり sum が確定する
+    HalfAdder(a=carryAB, b=carryABC, sum=carry, carry=disposed); // disposed は桁溢れ
+    // 最後に carry 同士で Add して carry が確定する
 }
