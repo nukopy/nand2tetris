@@ -24,7 +24,7 @@
 - Run handware simulator
 
 ```sh
-sh ./simulators/tools/HardwareSimulator.sh
+sh ./tools/HardwareSimulator.sh
 ```
 
 ### Part II: Software

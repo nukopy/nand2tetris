@@ -14,5 +14,27 @@ CHIP DMux4Way {
     OUT a, b, c, d;
 
     PARTS:
-    //// Replace this comment with your code.
+    /*
+    selector（入力と And を計算すると特定の出力のみ選択的に 1 にする bit）の定義
+    selector A = And(Not(sel1), Not(sel0))
+    selector B = And(Not(sel1), sel0)
+    selector C = And(sel1, Not(sel0))
+    selector A = And(sel1, sel0)
+    */
+
+    // selector に使用する内部ピンの準備
+    Not(in=sel[1], out=notSel1);
+    Not(in=sel[0], out=notSel0);
+
+    // define selector
+    And(a=notSel1, b=notSel0, out=selectorA);
+    And(a=notSel1, b=sel[0], out=selectorB);
+    And(a=sel[1], b=notSel0, out=selectorC);
+    And(a=sel[1], b=sel[0], out=selectorD);
+
+    // out
+    And(a=in, b=selectorA, out=a);
+    And(a=in, b=selectorB, out=b);
+    And(a=in, b=selectorC, out=c);
+    And(a=in, b=selectorD, out=d);
 }

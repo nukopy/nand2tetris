@@ -12,7 +12,56 @@
 CHIP Mux4Way16 {
     IN a[16], b[16], c[16], d[16], sel[2];
     OUT out[16];
-    
+
     PARTS:
-    //// Replace this comment with your code.
+    /*
+    // 入力が 4 種類なのでセレクターも 2 bit = 4 種類（00, 01, 10, 11）必要になる。
+    // まず、特定の入力だけを取り出すセレクターを定義する。
+    selectorA = And(Not(sel0), Not(sel1))
+    selectorB = And(sel0, Not(sel1))
+    selectorC = And(Not(sel0), sel1)
+    selectorD = And(sel0, sel1)
+
+    // 最後に各入力にセレクタを適用して Or で繋ぐ
+    Or(
+        And(a, selectorA),
+        And(b, selectorB),
+        And(c, selectorC),
+        And(d, selectorD),
+    )
+
+    // CAUTION: sel[i] は下位ビットから index = 0, 1, ... と振られるので注意
+    sel[1] | sel[0]
+       0   |   0
+       0   |   1
+       1   |   0
+       1   |   0
+    */
+
+    // 部品づくり
+    Not(in=sel[0], out=notSel0);
+    Not(in=sel[1], out=notSel1);
+
+    // 各 selector の定義
+    And(a=notSel0, b=notSel1, out=selectorA);
+    And(a=sel[0], b=notSel1, out=selectorB);
+    And(a=notSel0, b=sel[1], out=selectorC);
+    And(a=sel[0], b=sel[1], out=selectorD);
+
+    // 各 selector を 16 bit にする
+    Rep16(in=selectorA, out=selectorA16);
+    Rep16(in=selectorB, out=selectorB16);
+    Rep16(in=selectorC, out=selectorC16);
+    Rep16(in=selectorD, out=selectorD16);
+
+    // セレクタを適用
+    And16(a=a, b=selectorA16, out=outA);
+    And16(a=b, b=selectorB16, out=outB);
+    And16(a=c, b=selectorC16, out=outC);
+    And16(a=d, b=selectorD16, out=outD);
+
+    // out
+    Or16(a=outA, b=outB, out=or0);
+    Or16(a=or0, b=outC, out=or1);
+    Or16(a=or1, b=outD, out=out);
 }

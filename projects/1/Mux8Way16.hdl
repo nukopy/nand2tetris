@@ -20,5 +20,75 @@ CHIP Mux8Way16 {
     OUT out[16];
 
     PARTS:
-    //// Replace this comment with your code.
+    /*
+    // 入力が 8 種類なので、
+    // セレクターも 3 bit = 8 種類必要になる。
+    // セレクター：000, 001, 010, 011, 100, 101, 110, 111 (sel[2], sel[1], sel[0])
+    // まず、特定の入力だけを取り出すセレクターを定義する。
+    selectorA = And(Not(sel2), Not(sel1), Not(sel0)) // 000 -> 111
+    selectorB = And(Not(sel2), Not(sel1), sel0)      // 001 -> 110
+    selectorC = And(Not(sel2), sel1, Not(sel0))      // 010 -> 101
+    selectorD = And(Not(sel2), sel1, sel0)           // 011 -> 100
+    ---
+    selectorE = And(sel2, Not(sel1), Not(sel0))      // 100 -> 011
+    selectorF = And(sel2, Not(sel1), sel0)           // 101 -> 010
+    selectorG = And(sel2, sel1, Not(sel0))           // 110 -> 001
+    selectorH = And(sel2, sel1, sel0)                // 111 -> 000
+
+    // 最後に各入力にセレクタを適用して Or で繋ぐ
+    Or(
+        And(a, selectorA),
+        And(b, selectorB),
+        And(c, selectorC),
+        And(d, selectorD),
+        And(d, selectorE),
+        And(d, selectorF),
+        And(d, selectorG),
+        And(d, selectorH),
+    )
+    */
+
+    // 部品づくり
+    Not(in=sel[2], out=notSel2);
+    Not(in=sel[1], out=notSel1);
+    Not(in=sel[0], out=notSel0);
+
+    // 各 selector（1 bit）の定義
+    And3Way(a=notSel2, b=notSel1, c=notSel0, out=selectorA);
+    And3Way(a=notSel2, b=notSel1, c=sel[0], out=selectorB);
+    And3Way(a=notSel2, b=sel[1], c=notSel0, out=selectorC);
+    And3Way(a=notSel2, b=sel[1], c=sel[0], out=selectorD);
+    And3Way(a=sel[2], b=notSel1, c=notSel0, out=selectorE);
+    And3Way(a=sel[2], b=notSel1, c=sel[0], out=selectorF);
+    And3Way(a=sel[2], b=sel[1], c=notSel0, out=selectorG);
+    And3Way(a=sel[2], b=sel[1], c=sel[0], out=selectorH);
+
+    // selector を 16 bit 化
+    Rep16(in=selectorA, out=selectorA16);
+    Rep16(in=selectorB, out=selectorB16);
+    Rep16(in=selectorC, out=selectorC16);
+    Rep16(in=selectorD, out=selectorD16);
+    Rep16(in=selectorE, out=selectorE16);
+    Rep16(in=selectorF, out=selectorF16);
+    Rep16(in=selectorG, out=selectorG16);
+    Rep16(in=selectorH, out=selectorH16);
+
+    // selector を適用
+    And16(a=a, b=selectorA16, out=outA);
+    And16(a=b, b=selectorB16, out=outB);
+    And16(a=c, b=selectorC16, out=outC);
+    And16(a=d, b=selectorD16, out=outD);
+    And16(a=e, b=selectorE16, out=outE);
+    And16(a=f, b=selectorF16, out=outF);
+    And16(a=g, b=selectorG16, out=outG);
+    And16(a=h, b=selectorH16, out=outH);
+
+    // out
+    Or16(a=outA, b=outB, out=or0);
+    Or16(a=or0, b=outC, out=or1);
+    Or16(a=or1, b=outD, out=or2);
+    Or16(a=or2, b=outE, out=or3);
+    Or16(a=or3, b=outF, out=or4);
+    Or16(a=or4, b=outG, out=or5);
+    Or16(a=or5, b=outH, out=out);
 }
