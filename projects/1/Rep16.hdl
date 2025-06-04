@@ -1,5 +1,5 @@
 /**
- * This is helper chip.
+ * This is a helper chip.
  * Replicate input of 1 bit to 16 bit.
  */
 CHIP Rep16 {
