@@ -3,7 +3,7 @@
 ## Table of Contents
 
 - [ ] Part I: Hardware
-  - [ ] Project 01: Boolean Logic ブール論理
+  - [x] Project 01: Boolean Logic ブール論理
   - [ ] Project 02: Boolean Arithmetic ブール算術
   - [ ] Project 03: Memory メモリ
   - [ ] Project 04: Machine Language 機械語
