@@ -26,20 +26,177 @@
 // if (f == 0)  sets out = x & y  // bitwise and
 // if (no == 1) sets out = !out   // bitwise not
 
+/* 入力の制御ビット
+// 入力の前処理
+zx (zero x)     : 1 なら x を 0 にする
+nx (negate x)   : 1 なら x をビット反転（否定）する
+zy (zero y)     : 1 なら y を 0 にする
+ny (negate y)   : 1 なら y をビット反転（否定）する
+
+// 関数の計算
+f (function)    : 1 なら x + y, 0 なら x & y
+
+// 出力の negation
+no (negate out) : f の結果をビット反転（否定）する
+
+// 出力の制御ビット
+zr: 出力が 0 なら 1, それ以外なら 0
+ng: 出力が負の数なら 1, 0 以上なら 0
+*/
+
 CHIP ALU {
-    IN  
-        x[16], y[16],  // 16-bit inputs        
+    IN
+        x[16], y[16],  // 16-bit inputs
         zx, // zero the x input?
         nx, // negate the x input?
         zy, // zero the y input?
         ny, // negate the y input?
         f,  // compute (out = x + y) or (out = x & y)?
         no; // negate the out output?
-    OUT 
+    OUT
         out[16], // 16-bit output
         zr,      // if (out == 0) equals 1, else 0
         ng;      // if (out < 0)  equals 1, else 0
 
     PARTS:
-    //// Replace this comment with your code.
+    // x の前処理
+    // zx (zero x)     : 1 なら x を 0 にする
+    Not(in=zx, out=notZx);
+    And16(
+        a=x,
+        b[0]=notZx,
+        b[1]=notZx,
+        b[2]=notZx,
+        b[3]=notZx,
+        b[4]=notZx,
+        b[5]=notZx,
+        b[6]=notZx,
+        b[7]=notZx,
+        b[8]=notZx,
+        b[9]=notZx,
+        b[10]=notZx,
+        b[11]=notZx,
+        b[12]=notZx,
+        b[13]=notZx,
+        b[14]=notZx,
+        b[15]=notZx,
+        out=outZx
+    );
+    // nx (negate x)   : 1 なら x をビット反転（否定）する
+    Xor16(
+        a=outZx,
+        b[0]=nx,
+        b[1]=nx,
+        b[2]=nx,
+        b[3]=nx,
+        b[4]=nx,
+        b[5]=nx,
+        b[6]=nx,
+        b[7]=nx,
+        b[8]=nx,
+        b[9]=nx,
+        b[10]=nx,
+        b[11]=nx,
+        b[12]=nx,
+        b[13]=nx,
+        b[14]=nx,
+        b[15]=nx,
+        out=outNx
+    );
+
+    // y の前処理
+    // zy (zero y)     : 1 なら y を 0 にする
+    Not(in=zy, out=notZy);
+    And16(
+        a=y,
+        b[0]=notZy,
+        b[1]=notZy,
+        b[2]=notZy,
+        b[3]=notZy,
+        b[4]=notZy,
+        b[5]=notZy,
+        b[6]=notZy,
+        b[7]=notZy,
+        b[8]=notZy,
+        b[9]=notZy,
+        b[10]=notZy,
+        b[11]=notZy,
+        b[12]=notZy,
+        b[13]=notZy,
+        b[14]=notZy,
+        b[15]=notZy,
+        out=outZy
+    );
+    // ny (negate y)   : 1 なら y をビット反転（否定）する
+    Xor16(
+        a=outZy,
+        b[0]=ny,
+        b[1]=ny,
+        b[2]=ny,
+        b[3]=ny,
+        b[4]=ny,
+        b[5]=ny,
+        b[6]=ny,
+        b[7]=ny,
+        b[8]=ny,
+        b[9]=ny,
+        b[10]=ny,
+        b[11]=ny,
+        b[12]=ny,
+        b[13]=ny,
+        b[14]=ny,
+        b[15]=ny,
+        out=outNy
+    );
+
+    /* f (function)    : 1 なら x + y, 0 なら x & y
+    f(x, y) = Or(And(x + y, f), And(x & y), Not(f))
+    → マルチプレクサの実装パターンがそのまま使える
+    */
+    Not(in=f, out=notF);
+    And16(a=outNx, b=outNy, out=andXy); // x & y
+    Add16(a=outNx, b=outNy, out=addXy); // x + y
+    // sel(f) == 0 のとき x & y, sel(f) == 1 のとき、x + y,
+    // sel が 0 のときに a が選択されるので注意
+    Mux16(a=andXy, b=addXy, sel=f, out=outF);
+
+    // no (negate out) : f の結果をビット反転（否定）する
+    Xor16(
+        a=outF,
+        b[0]=no,
+        b[1]=no,
+        b[2]=no,
+        b[3]=no,
+        b[4]=no,
+        b[5]=no,
+        b[6]=no,
+        b[7]=no,
+        b[8]=no,
+        b[9]=no,
+        b[10]=no,
+        b[11]=no,
+        b[12]=no,
+        b[13]=no,
+        b[14]=no,
+        b[15]=no,
+        out[0..7]=outNo0to7,
+        out[8..14]=outNo8to14,
+        out[15]=outNo15
+    );
+
+    // 出力の制御ビット
+    // zr: 出力が 0 なら 1, それ以外なら 0
+    // out の全ての bit の Or を取って、0 なら zr は 1、1 なら zr は 0
+    Or8Way(in=outNo0to7, out=or0to7);
+    Or8Way(in[0..6]=outNo8to14, in[7]=outNo15, out=or8to15);
+    Or(a=or0to7, b=or8to15, out=orOut16Way);
+    Not(in=orOut16Way, out=zr);
+
+    // ng: 出力が負の数なら 1, 0 以上なら 0
+    // out の最上位ビットが 1 なら負の数なので ng は 1、0 なら 0 以上の数なので ng は 0
+    // 制御ビット no の出力を 2 つに分けているので、インデックスが 7 なことに注意。実際は 16 ビット目を表す。
+    Identity(in=outNo15, out=ng);
+
+    // out の出力
+    Identity16(in[0..7]=outNo0to7, in[8..14]=outNo8to14, in[15]=outNo15, out=out);
 }
