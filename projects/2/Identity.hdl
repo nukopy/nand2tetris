@@ -1,0 +1,12 @@
+/**
+ * This is a helper chip.
+ * out = in
+ */
+CHIP Identity {
+    IN in;
+    OUT out;
+
+    PARTS:
+    Not(in=in, out=notIn);
+    Not(in=notIn, out=out);
+}

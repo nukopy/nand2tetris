@@ -1,0 +1,26 @@
+/**
+ * This is a helper chip.
+ * out[0..15] = in[0..15]
+ */
+CHIP Identity16 {
+    IN in[16];
+    OUT out[16];
+
+    PARTS:
+    Identity(in=in[0], out=out[0]);
+    Identity(in=in[1], out=out[1]);
+    Identity(in=in[2], out=out[2]);
+    Identity(in=in[3], out=out[3]);
+    Identity(in=in[4], out=out[4]);
+    Identity(in=in[5], out=out[5]);
+    Identity(in=in[6], out=out[6]);
+    Identity(in=in[7], out=out[7]);
+    Identity(in=in[8], out=out[8]);
+    Identity(in=in[9], out=out[9]);
+    Identity(in=in[10], out=out[10]);
+    Identity(in=in[11], out=out[11]);
+    Identity(in=in[12], out=out[12]);
+    Identity(in=in[13], out=out[13]);
+    Identity(in=in[14], out=out[14]);
+    Identity(in=in[15], out=out[15]);
+}
