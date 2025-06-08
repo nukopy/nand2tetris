@@ -13,43 +13,22 @@ CHIP RAM8 {
     OUT out[16];
 
     PARTS:
-    // レジスタへの書き込み（クロック依存な回路）
-    /* アドレスから「どのレジスタへ書き込むか」を決める必要がある。
-    in はそのままそれぞれのレジスタに垂れ流しで OK。
-
-    各レジスタの address をセレクタのように扱い、
-    load フラグを address によって決定すれば、
-    各サイクルで選択的に 1 つのレジスタのみに書き込みを行うことができる。
-
-    loaderN はレジスタ N への書き込みを行うための load フラグを表す。
-
-    loader0 = And(notAddr2, notAddr1, notAddr0) & load
-    loader1 = And(notAddr2, notAddr1, addr[0]) & load
-    loader2 = And(notAddr2, addr[1], notAddr0) & load
-    loader3 = And(notAddr2, addr[1], addr[0]) & load
-    loader4 = And(addr[2], notAddr1, notAddr0) & load
-    loader5 = And(addr[2], notAddr1, addr[0]) & load
-    loader6 = And(addr[2], addr[1], notAddr0) & load
-    loader7 = And(addr[2], addr[1], addr[0]) & load
-    */
-    // loader の準備：address からセレクタ用のフラグを定義
-    Not(in=address[2], out=notAddr2);
-    Not(in=address[1], out=notAddr1);
-    Not(in=address[0], out=notAddr0);
-
-    // loader の定義
-    // 入力の load, address[3] から loader0 ~ loader7 を作る
-    And4Way(a=notAddr2, b=notAddr1, c=notAddr0, d=load, out=loader0);
-    And4Way(a=notAddr2, b=notAddr1, c=address[0], d=load, out=loader1);
-    And4Way(a=notAddr2, b=address[1], c=notAddr0, d=load, out=loader2);
-    And4Way(a=notAddr2, b=address[1], c=address[0], d=load, out=loader3);
-    And4Way(a=address[2], b=notAddr1, c=notAddr0, d=load, out=loader4);
-    And4Way(a=address[2], b=notAddr1, c=address[0], d=load, out=loader5);
-    And4Way(a=address[2], b=address[1], c=notAddr0, d=load, out=loader6);
-    And4Way(a=address[2], b=address[1], c=address[0], d=load, out=loader7);
-
     // どのレジスタへ書き込むのかを address から選択する
-    // 選択の実体は loader0 ~ loader7
+    // 選択の実体は loader0 ~ loader7 & load
+    DMux8Way(
+        in=load,
+        sel=address,
+        a=loader0,
+        b=loader1,
+        c=loader2,
+        d=loader3,
+        e=loader4,
+        f=loader5,
+        g=loader6,
+        h=loader7
+    );
+
+    // レジスタへの書き込み（クロック依存な回路）
     Register(in=in, load=loader0, out=r0);
     Register(in=in, load=loader1, out=r1);
     Register(in=in, load=loader2, out=r2);
