@@ -13,5 +13,32 @@ CHIP RAM8 {
     OUT out[16];
 
     PARTS:
-    //// Replace this comment with your code.
+    // どのレジスタへ書き込むのかを address から選択する
+    // 選択の実体は loader0 ~ loader7 & load
+    DMux8Way(
+        in=load,
+        sel=address,
+        a=loader0,
+        b=loader1,
+        c=loader2,
+        d=loader3,
+        e=loader4,
+        f=loader5,
+        g=loader6,
+        h=loader7
+    );
+
+    // レジスタへの書き込み（クロック依存な回路）
+    Register(in=in, load=loader0, out=r0);
+    Register(in=in, load=loader1, out=r1);
+    Register(in=in, load=loader2, out=r2);
+    Register(in=in, load=loader3, out=r3);
+    Register(in=in, load=loader4, out=r4);
+    Register(in=in, load=loader5, out=r5);
+    Register(in=in, load=loader6, out=r6);
+    Register(in=in, load=loader7, out=r7);
+
+    // レジスタからの読み出し（クロック非依存な回路）
+    // アドレスを指定してレジスタの中身を出力する
+    Mux8Way16(a=r0, b=r1, c=r2, d=r3, e=r4, f=r5, g=r6, h=r7, sel=address, out=out);
 }

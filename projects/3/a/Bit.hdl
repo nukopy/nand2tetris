@@ -13,5 +13,10 @@ CHIP Bit {
     OUT out;
 
     PARTS:
-    //// Replace this comment with your code.
+    Mux(a=outInner, b=in, sel=load, out=outMux);
+    DFF(in=outMux, out=outInner);
+    // フィードバックループを実装するために、
+    // 直接 out を分岐できないので、outInner にして内部ピンとして使えるようにしてから out を出力する
+    Not(in=outInner, out=notOutInner);
+    Not(in=notOutInner, out=out);
 }
