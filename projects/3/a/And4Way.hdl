@@ -1,0 +1,13 @@
+/**
+ * This is a helper chip.
+ * 4-way And gate:
+ */
+CHIP And4Way {
+    IN a, b, c, d;
+    OUT out;
+
+    PARTS:
+    And(a=a, b=b, out=aAndB);
+    And(a=aAndB, b=c, out=outAAndBAndC);
+    And(a=outAAndBAndC, b=d, out=out);
+}
