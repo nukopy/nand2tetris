@@ -41,6 +41,7 @@ for file in $hdl_files; do
 done
 
 # zip 作成（-j: フラットに）
+rm -f "$OUT_FILENAME"  # 既存のファイルを削除
 zip -j "$OUT_FILENAME" $hdl_files
 
 echo "Created $OUT_FILENAME with HDL files."
