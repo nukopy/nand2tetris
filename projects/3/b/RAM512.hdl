@@ -13,5 +13,44 @@ CHIP RAM512 {
     OUT out[16];
 
     PARTS:
-    //// Replace this comment with your code.
+    // RAM512 内のどの RAM64 を使用するか？
+    // address = yyyyyyxxx の xxx = address[0..2] を使用する
+    DMux8Way(
+        in=load,
+        sel=address[0..2],
+        a=loader0,
+        b=loader1,
+        c=loader2,
+        d=loader3,
+        e=loader4,
+        f=loader5,
+        g=loader6,
+        h=loader7
+    );
+
+    // RAM への書き込み
+    // RAM8 内のどのアドレスを使用するか？
+    // address = yyyyyyxxx の yyyyyy = address[3..8] を使用する
+    RAM64(in=in, load=loader0, address=address[3..8], out=outRam0);
+    RAM64(in=in, load=loader1, address=address[3..8], out=outRam1);
+    RAM64(in=in, load=loader2, address=address[3..8], out=outRam2);
+    RAM64(in=in, load=loader3, address=address[3..8], out=outRam3);
+    RAM64(in=in, load=loader4, address=address[3..8], out=outRam4);
+    RAM64(in=in, load=loader5, address=address[3..8], out=outRam5);
+    RAM64(in=in, load=loader6, address=address[3..8], out=outRam6);
+    RAM64(in=in, load=loader7, address=address[3..8], out=outRam7);
+
+    // RAM からの読み出し：どの RAM の出力を使うか
+    Mux8Way16(
+        a=outRam0,
+        b=outRam1,
+        c=outRam2,
+        d=outRam3,
+        e=outRam4,
+        f=outRam5,
+        g=outRam6,
+        h=outRam7,
+        sel=address[0..2],
+        out=out
+    );
 }

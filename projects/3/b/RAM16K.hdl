@@ -13,5 +13,32 @@ CHIP RAM16K {
     OUT out[16];
 
     PARTS:
-    //// Replace this comment with your code.
+    // RAM16K 内のどの RAM4K を使用するか？
+    // address = yyyyyyyyyyyyxx の xx = address[0..1] を使用する
+    DMux4Way(
+        in=load,
+        sel=address[0..1],
+        a=loader0,
+        b=loader1,
+        c=loader2,
+        d=loader3
+    );
+
+    // RAM への書き込み
+    // RAM8 内のどのアドレスを使用するか？
+    // address = yyyyyyyyyyyyxx の yyyyyyyyyyyy = address[2..13] を使用する
+    RAM4K(in=in, load=loader0, address=address[2..13], out=outRam0);
+    RAM4K(in=in, load=loader1, address=address[2..13], out=outRam1);
+    RAM4K(in=in, load=loader2, address=address[2..13], out=outRam2);
+    RAM4K(in=in, load=loader3, address=address[2..13], out=outRam3);
+
+    // RAM からの読み出し：どの RAM の出力を使うか
+    Mux4Way16(
+        a=outRam0,
+        b=outRam1,
+        c=outRam2,
+        d=outRam3,
+        sel=address[0..1],
+        out=out
+    );
 }
