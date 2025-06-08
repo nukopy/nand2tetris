@@ -12,7 +12,102 @@
 CHIP PC {
     IN in[16],inc, load, reset;
     OUT out[16];
-    
+
     PARTS:
-    //// Replace this comment with your code.
+    /**
+     * selector の実装
+     */
+
+    // selector の部品の準備
+    Not(in=reset, out=notReset);
+    Not(in=load, out=notLoad);
+    Not(in=inc, out=notInc);
+
+    // selector の定義
+    // - selectorReset = reset
+    // そのまま
+    // - selectorLoad = And(Not(reset), load)
+    And(a=notReset, b=load, out=selectorLoad);
+    // - selectorInc
+    And(a=notReset, b=notLoad, out=andNotResetNotLoad);
+    And(a=andNotResetNotLoad, b=inc, out=selectorInc);
+    // - selectorOut
+    And(a=andNotResetNotLoad, b=notInc, out=selectorOut);
+
+    /**
+     * 各出力の実装
+     */
+
+    // 出力
+    // reset
+    And16(
+        a=in,
+        b[0]=notReset,
+        b[1]=notReset,
+        b[2]=notReset,
+        b[3]=notReset,
+        b[4]=notReset,
+        b[5]=notReset,
+        b[6]=notReset,
+        b[7]=notReset,
+        b[8]=notReset,
+        b[9]=notReset,
+        b[10]=notReset,
+        b[11]=notReset,
+        b[12]=notReset,
+        b[13]=notReset,
+        b[14]=notReset,
+        b[15]=notReset,
+        out=outReset // reset == 1 なら、ここで out = 0 になる
+    );
+
+    // load
+    // ここではなにもしない
+
+    // inc
+    Inc16(in=outInner, out=outInc);
+
+    /**
+     * 出力の選択
+     */
+
+    // 出力の選択
+    /* セレクターのマッピング
+    sel
+    000 -> out(t)
+    001 -> inc
+    010 -> load
+    011 -> load
+    100 -> reset
+    101 -> reset
+    110 -> reset
+    111 -> reset
+    */
+    Mux8Way16(
+        a=outInner,
+        b=outInc,
+        c=in, // load
+        d=in, // load
+        e=outReset,
+        f=outReset,
+        g=outReset,
+        h=outReset,
+        // それぞれのセレクターを使って Mux のセレクタを表現する
+        sel[2]=reset,
+        sel[1]=selectorLoad,
+        sel[0]=selectorInc,
+        out=outMux
+    );
+
+    // loader の定義
+    // reset, load, inc のいずれかの場合は loader = 1 になる
+    Or(a=reset, b=selectorLoad, out=loader0);
+    Or(a=loader0, b=selectorInc, out=loader);
+
+    // Register への読み書き
+    Register(in=outMux, load=loader, out=outInner);
+
+    // out
+    Not16(in=outInner, out=notOutInner);
+    Not16(in=notOutInner, out=out);
 }
