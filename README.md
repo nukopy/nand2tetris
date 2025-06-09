@@ -27,6 +27,12 @@
 sh ./tools/HardwareSimulator.sh
 ```
 
+- Run CPU emulator
+
+```sh
+sh ./tools/CPUEmulator.sh
+```
+
 ### Part II: Software
 
 TBD
