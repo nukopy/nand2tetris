@@ -7,7 +7,7 @@
   - [x] Project 02: Boolean Arithmetic ブール算術
   - [x] Project 03: Memory メモリ
   - [x] Project 04: Machine Language 機械語
-  - [ ] Project 05: Computer Architecture コンピュータアーキテクチャ
+  - [x] Project 05: Computer Architecture コンピュータアーキテクチャ
   - [ ] Project 06: Assembler アセンブラ
 - [ ] Part II: Software
   - [ ] Project 07: VM I: Stack Arithmetic 仮想マシン I: スタック操作

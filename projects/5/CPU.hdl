@@ -18,8 +18,34 @@
  * clocked: although they are affected by the instruction's execution, they commit to
  * their new values only in the next cycle.
  */
-CHIP CPU {
 
+/* instruction の仕様 (p.89 参照)
+
+## A 命令
+
+- 記号表現：`@xxx`
+  - 制約：0 <= xxx <= 32767
+- バイナリ表現：0vvv_vvvv_vvvv_vvvv
+- 説明
+  - 16 bit 目の `0` は A 命令用の固定の prefix。
+  - vvv_vvvv_vvvv_vvvv は 15 ビット値
+
+## C 命令
+
+- 記号表現：`dest = comp;jump`
+  - 制約：
+    - comp は必須
+    - もし dest が空の場合、`=` は省略される
+    - もし jump が空の場合、`;` は諸裏y腐れる
+- バイナリ表現：111accccccdddjjj
+- 説明
+  - comp: acccccc (7 bit)
+  - dest: ddd (3 bit)
+  - jump: jjj (3 bit)
+
+*/
+
+CHIP CPU {
     IN  inM[16],         // M value input  (M = contents of RAM[A])
         instruction[16], // Instruction for execution
         reset;           // Signals whether to re-start the current
@@ -27,10 +53,292 @@ CHIP CPU {
                          // the current program (reset==0).
 
     OUT outM[16],        // M value output
-        writeM,          // Write to M? 
+        writeM,          // Write to M?
         addressM[15],    // Address in data memory (of M)
         pc[15];          // address of next instruction
 
     PARTS:
-	//// Replace this comment with your code.
+
+    // ------------------------------------------------------------
+    // 命令のデコード
+    // ------------------------------------------------------------
+
+    // A 命令のデコード：instruction[15] == 0
+    // 記号表現：@xxx
+    // バイナリ表現：0vvv_vvvv_vvvv_vvvv
+    // - アドレスレジスタに instruction = 0vvv_vvvv_vvvv_vvvv を load
+    // - これ以外は何もしない
+
+    // C 命令のデコード：instruction[15] == 1
+    // 記号表現：`dest=comp;jump`
+    // バイナリ表現：111accccccdddjjj
+    // - 111    = C 命令の固定の prefix
+    // - a      = instruction[12]: ALU の演算対象を A にするか M にするかのセレクタとして働く制御ビット
+    //   if (a == 0) A
+    //   else if (a== 1) M
+    // - cccccc = ALU で実行する演算を決定する制御ビット
+    // - ddd    = ALU の演算結果（comp の結果）をどこに保存するか。
+    //   A, D, M の部分集合（部分集合なので、もちろん空集合を含む）
+    //   - d_5 = instruction[5] は、comp の A への保存を決定する。d_5 == 1 なら A に ALU の演算結果（comp）を保存する。
+    //   - d_4 = instruction[4] は、comp の D への保存を決定する。d_4 == 1 なら D に ALU の演算結果（comp）を保存する。
+    //   - d_3 = instruction[3] は、comp の M への保存を決定する。d_3 == 1 なら M に ALU の演算結果（comp）を保存する。
+    // - jjj    = ジャンプするかどうかの条件判定
+
+    // -------------------------
+    // 便利なフラグの準備
+    // -------------------------
+
+    // isA, isC の定義
+    // instruction[15] == 0 なら A 命令、そうでなければ C 命令
+    Not(in=instruction[15], out=isA);
+    Not(in=isA, out=isC);
+
+    // -------------------------
+    // ARegister の定義
+    // -------------------------
+
+    // ARegister への入力の定義
+    // in:
+    //   instruction または ALU の演算結果（comp）が ARegister への入力となる
+    // selector:
+    //   A 命令なら instruction、C 命令なら comp
+    //   instruction[15] が 0 のとき、instruction を選択、1 のときは comp を選択
+    Mux16(a=instruction, b=comp, sel=instruction[15], out=inARegister);
+
+    // ARegister への loader の定義
+    // A 命令の load と C 命令の load の Or を取る必要がある
+    // A 命令の場合（@xxx）、instruction の最上位ビット（instruction[15]）が 0 のとき、ARegister に instruction を load する（A 命令のときは instruction がそのままアドレスになる）
+    Not(in=instruction[15], out=loaderARegisterFromAInstruction);
+    // C 命令の場合（dest=comp;jump）、instruction[5] == 1 のとき、ARegister に ALU の演算結果 comp を load する
+    // loaderARegisterFromCInstruction = 現在の命令が C 命令であること && instruction[5]
+    And(a=isC, b=instruction[5], out=loaderARegisterFromCInstruction);
+    Or(
+        a=loaderARegisterFromAInstruction,
+        b=loaderARegisterFromCInstruction,
+        out=loaderARegister
+    );
+
+    // ARegister の定義
+    ARegister(in=inARegister, load=loaderARegister, out=outARegister);
+
+    // ------------------------------------------------------------
+    // 命令の実行
+    // ------------------------------------------------------------
+
+    // A 命令
+    // 記号表現：@xxx
+    // noop: 特に何もしない
+
+    // C 命令
+    // 記号表現：`dest = comp;jump`
+    // バイナリ表現：111accccccdddjjj
+
+    // --------------------
+    // ALU への入力の定義
+    // --------------------
+
+    // DRegister への loader の定義
+    // C 命令の制御ビット d5,d_4,d_3 の内、d_4 を使用する
+    // d_4 の仕様：d_4 = instruction[4] は、comp の D への保存を決定する。d_4 == 1 なら D に ALU の演算結果（comp）を保存する。
+    // loaderDRegister = 現在の命令が C 命令であること && instruction[4]
+    And(a=isC, b=instruction[4], out=loaderDRegister);
+
+    // DRegister の定義
+    DRegister(in=comp, load=loaderDRegister, out=outDRegister);
+
+    // A か M の選択
+    // a = instruction[12] は ALU の演算対象を A にするか M にするかのセレクタとして働く制御ビット
+    // (p.89) if (a == 0) A, else M
+    Mux16(a=outARegister, b=inM, sel=instruction[12], out=outMuxAAndM);
+
+    // --------------------
+    // ALU の定義
+    // --------------------
+
+    ALU(
+        // in: data
+        x=outDRegister,
+        y=outMuxAAndM,
+        // in: control bit
+        zx=instruction[11],
+        nx=instruction[10],
+        zy=instruction[9],
+        ny=instruction[8],
+        f=instruction[7],
+        no=instruction[6],
+        // out: data
+        out=comp,
+        // out: control bit
+        zr=isCompZero,
+        ng=isCompNegative
+    );
+
+    // 便利なフラグの定義（プログラムカウンタで使用する）
+    Not(in=isCompZero, out=isCompNotZero);
+    Not(in=isCompNegative, out=isCompZeroOrPositive); // comp < 0 を否定 com >= 0。ここを isCompPositive としてしまうと time = 32 あたりの境界値のテストで落ちるので注意。
+    And(a=isCompNotZero, b=isCompZeroOrPositive, out=isCompPositive);
+    Or(a=isCompZero, b=isCompNegative, out=isCompZeroOrNegative);
+
+    // --------------------
+    // outM の定義
+    // --------------------
+
+    // 中間ピン comp = 出力ピン outM
+    Not16(in=comp, out=notOutALU);
+    Not16(in=notOutALU, out=outM); // writeM に関係なく常に出力はしてて OK
+
+    // --------------------
+    // writeM の定義
+    // --------------------
+
+    // M = RAM[A] への loader（M = RAM[A] への書き込み）、つまり writeM の定義
+    // C 命令の制御ビット d5,d_4,d_3 の内、d_3 を使用する
+    // d_3 の仕様：d_3 = instruction[3] は、comp の M への保存を決定する。d_3 == 1 なら M に ALU の演算結果（comp）を保存する。
+    // つまり writeM = 現在の命令が C 命令であること && instruction[3]
+    And(a=isC, b=instruction[3], out=writeM);
+
+    // --------------------
+    // addressM の定義
+    // --------------------
+
+    Not16(in=outARegister, out=notOutARegister);
+    Not16(in=notOutARegister, out[15]=noop, out[0..14]=addressM);
+
+    // ------------------------------------------------------------
+    // 命令のフェッチ: プログラムカウンタの定義
+    // 次にフェッチされるべき命令のアドレスを出力する
+    // ------------------------------------------------------------
+
+    /** プログラムカウンタ PC の仕様
+    * A 16-bit counter.
+    * if      reset(t): out(t+1) = 0
+    * else if load(t):  out(t+1) = in(t)
+    * else if inc(t):   out(t+1) = out(t) + 1
+    * else              out(t+1) = out(t)
+    */
+    // CPU におけるプログラムカウンタの動作
+    // ジャンプする場合は A を出力、それ以外の場合はインクリメント
+    // if jump then PC=A (load を使う) else PC++ (inc を使う)
+    // PC への入力 in は load のときのみ使用される
+    /*
+    jump 命令は、以下 2 つの Hack アセンブリからなる：
+
+    ```asm
+    @jump先のアドレス // つまり A（ARegister に格納されているアドレス）
+    評価対象;jump評価式
+    ```
+    */
+    // isJump みたいなフラグができれば良い。
+    // C 命令のデコード：instruction[15] == 1
+    // 記号表現：`dest=comp;jump`
+    // バイナリ表現：111accccccdddjjj
+    // - jjj    = ジャンプするかどうかの条件判定（instruction[2] ~ instruction[0]）
+    /* jump の評価式の対応表
+    null 000, ジャンプなし        -> false
+    JGT  001, if comp > 0 jump  -> isCompPositive
+    JEQ  010, if comp = 0 jump  -> isCompZero
+    JGE  011, if comp >= 0 jump -> isCompZero || isCompPositive
+    JLT  100, if comp < 0 jump  -> isCompNegative
+    JNE  101, if comp != 0 jump -> isCompNotZero
+    JLE  110, if comp <= 0 jump -> isCompZero || isCompNegative
+    JMP  111, 無条件ジャンプ      -> true
+    */
+
+    // --------------------
+    // 便利なフラグの実装
+    // --------------------
+
+    /*
+    J2: instruction[2]
+    notJ2: Not(instruction[2])
+    J1: instruction[1]
+    notJ1: Not(instruction[1])
+    J0: instruction[0]
+    notJ0: Not(instruction[0])
+    */
+    Not(in=instruction[2], out=notJ2);
+    Not(in=notJ2, out=J2);
+    Not(in=instruction[1], out=notJ1);
+    Not(in=notJ1, out=J1);
+    Not(in=instruction[0], out=notJ0);
+    Not(in=notJ0, out=J0);
+
+    // --------------------
+    // 各 jump を入力 jjj から選択する selector の実装
+    // --------------------
+
+    /*
+    selector null 000 = And(notJ2, notJ1, notJ0) && false
+    selector JGT  001 = And(notJ2, notJ1, J0   ) && isCompPositive
+    selector JEQ  010 = And(notJ2, J1   , notJ0) && isCompZero
+    selector JGE  011 = And(notJ2, J1   , J0   ) && (isCompZero || isCompPositive)
+    selector JLT  100 = And(J2   , notJ1, notJ0) && isCompNegative
+    selector JNE  101 = And(J2   , notJ1, J0   ) && isCompNotZero
+    selector JLE  110 = And(J2   , J1   , notJ0) && (isCompZero || isCompNegative)
+    selector JMP  111 = And(J2   , J1   , J0   ) && true
+    */
+    And3Way(a=notJ2, b=notJ1, c=notJ0, out=selectorNull);
+    And3Way(a=notJ2, b=notJ1, c=J0, out=selectorJGT);
+    And3Way(a=notJ2, b=J1, c=notJ0, out=selectorJEQ);
+    And3Way(a=notJ2, b=J1, c=J0, out=selectorJGE);
+    And3Way(a=J2, b=notJ1, c=notJ0, out=selectorJLT);
+    And3Way(a=J2, b=notJ1, c=J0, out=selectorJNE);
+    And3Way(a=J2, b=J1, c=notJ0, out=selectorJLE);
+    And3Way(a=J2, b=J1, c=J0, out=selectorJMP);
+
+    // --------------------
+    // 個別の jump 判定フラグの実装
+    // --------------------
+
+    // null 000
+    And(a=selectorNull, b=false, out=isJumpNull); // 必ず false になる
+    // JGT  001
+    And(a=selectorJGT, b=isCompPositive, out=isJumpJGT);
+    // JEQ  010
+    And(a=selectorJEQ, b=isCompZero, out=isJumpJEQ);
+    // JGE  011
+    And(a=selectorJGE, b=isCompZeroOrPositive, out=isJumpJGE);
+    // JLT  100
+    And(a=selectorJLT, b=isCompNegative, out=isJumpJLT);
+    // JNE  101
+    And(a=selectorJNE, b=isCompNotZero, out=isJumpJNE);
+    // JLE  110
+    And(a=selectorJLE, b=isCompZeroOrNegative, out=isJumpJLE);
+    // JMP  111
+    And(a=selectorJMP, b=true, out=isJumpJMP);
+
+    // --------------------
+    // 全体の jump 判定フラグ isJump の実装
+    // --------------------
+
+    // いずれかのジャンプ判定が true ならジャンプ判定は true
+    Or8Way(
+        in[7]=isJumpNull,
+        in[6]=isJumpJGT,
+        in[5]=isJumpJEQ,
+        in[4]=isJumpJGE,
+        in[3]=isJumpJLT,
+        in[2]=isJumpJNE,
+        in[1]=isJumpJLE,
+        in[0]=isJumpJMP,
+        out=isJumpTmp
+    );
+    // jump 判定は C 命令のときのみなので、isJump && isC をすると正しく判定できる
+    And(a=isJumpTmp, b=isC, out=isJump);
+    Not(in=isJump, out=isNotJump);
+
+    // --------------------
+    // プログラムカウンタの実装
+    // --------------------
+
+    // if jump then PC=A (load を使う) else PC++ (inc を使う)
+    PC(
+        in=outARegister,
+        load=isJump,
+        inc=isNotJump,
+        reset=reset,
+        out[15]=noop2,
+        // out: pc
+        out[0..14]=pc
+    );
 }
