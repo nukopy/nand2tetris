@@ -3,10 +3,10 @@ resolver = "3"
 members = [
     "software/jack-compiler",
     "software/hack-assembler",
+    "install",
 ]
 
 [workspace.package]
-name = "nukopy-nand2tetris-software"
 edition = "2024"
 version = "0.0.1"
 rust-version = "1.85"

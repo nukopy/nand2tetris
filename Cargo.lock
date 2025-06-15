@@ -9,3 +9,11 @@ version = "0.0.1"
 [[package]]
 name = "jack-compiler"
 version = "0.0.1"
+
+[[package]]
+name = "nukopy-nand2tetris-software"
+version = "0.0.1"
+dependencies = [
+ "hack-assembler",
+ "jack-compiler",
+]
