@@ -18,6 +18,7 @@ test:
 # for CD
 # ----------------------------------------
 
+# ローカルリポジトリにおけるリリース用の空コミット & タグ付与までを実行する
 version:
     # ref: https://github.com/pksunkara/cargo-workspaces?tab=readme-ov-file#version
     cargo ws version \
