@@ -136,6 +136,7 @@ cargo ws version [major|minor|patch]
 ```
 
 - Publish all the crate from the workspace in the correct order according to their dependencies. By defaullt, this command runs `version` first.
+  - ref: https://github.com/pksunkara/cargo-workspaces?tab=readme-ov-file#publish
 
 ```sh
 # dry run
@@ -146,7 +147,3 @@ cargo ws publish --dry-run
 
 - Nand2Tetris Software Suite
   - https://www.nand2tetris.org/software
-
-```
-
-```
