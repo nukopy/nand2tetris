@@ -27,5 +27,19 @@ version:
         --no-git-push \
         --no-individual-tags
 
+release tag:
+    # push tag to remote
+    git push origin "{{tag}}"
+
+    # create a release on GitHub
+    gh release create \
+        --title "{{tag}}" \
+        --generate-notes \
+        --notes "Release {{tag}} :tada:" \
+        --draft
+
+publish:
+    cargo ws publish --publish-interval 5 --publish-as-is
+
 publish-dry-run:
     cargo ws publish --dry-run
