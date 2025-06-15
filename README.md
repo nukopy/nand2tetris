@@ -144,6 +144,19 @@ cargo ws version [major|minor|patch]
 cargo ws publish --dry-run
 ```
 
+### for release
+
+```sh
+# tagging on local git repository
+just version
+
+# pushing the tag to remote repository & generate release notes
+just release <tag>
+
+# publishh to crates.io
+just publish
+```
+
 ## Links
 
 - Nand2Tetris Software Suite
