@@ -1,0 +1,23 @@
+[workspace]
+resolver = "3"
+members = [
+    "software/jack-compiler",
+    "software/hack-assembler",
+    "install",
+]
+
+[workspace.package]
+edition = "2024"
+version = "0.0.1"
+rust-version = "1.85"
+authors = ["nukopy <nukopy@gmail.com>"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/nukopy/nand2tetris"
+homepage = "https://github.com/nukopy/nand2tetris"
+description = "Software for Nand2Tetris"
+categories = [
+    "nand2tetris",
+    "hack-assembler",
+    "jack-compiler",
+]

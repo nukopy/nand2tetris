@@ -17,6 +17,14 @@
   - [ ] Project 11: Compiler II: Code Generation コンパイラ II: コード生成
   - [ ] Project 12: Operating System オペレーティングシステム（OS）
 
+## Environment
+
+- OS: macOS Sonoma 14.7
+- Chip: Apple M3 Max
+- Rust 1.85.1 (4eb161250 2025-03-15)
+- just 1.40.0
+- cargo-workspaces 0.4.0
+
 ## Commands
 
 ### Part I: Hardware
@@ -67,6 +75,72 @@ Found the following .hdl files:
   adding: Inc16.hdl (deflated 67%)
   adding: Add16.hdl (deflated 65%)
 Created ./submissions/project2.zip with HDL files.
+```
+
+### for Cargo
+
+#### Install tools
+
+- Install just
+
+```sh
+cargo install just
+```
+
+- Install cargo-workspaces
+
+```sh
+cargo install cargo-workspaces
+```
+
+#### Testing
+
+- Run tests for all workspaces
+
+```sh
+cargo test --workspace
+```
+
+- Run tests for a specific package (= member of the workspace)
+
+```sh
+cargo test -p hack-assembler
+```
+
+#### `cargo-workspaces` commands
+
+ref: https://github.com/pksunkara/cargo-workspaces
+
+- Create a new workspace
+
+```sh
+cargo workspaces create <hoge>
+
+# for short:
+cargo ws create <hoge>
+```
+
+- List workspaces: output the name of each workspace in this project
+
+```sh
+cargo ws list
+# jack-compiler
+# hack-assembler
+```
+
+- Bump the version of all workspaces
+  - ref: https://github.com/pksunkara/cargo-workspaces?tab=readme-ov-file#version
+
+```sh
+cargo ws version [major|minor|patch]
+```
+
+- Publish all the crate from the workspace in the correct order according to their dependencies. By defaullt, this command runs `version` first.
+  - ref: https://github.com/pksunkara/cargo-workspaces?tab=readme-ov-file#publish
+
+```sh
+# dry run
+cargo ws publish --dry-run
 ```
 
 ## Links
