@@ -1,0 +1,13 @@
+[package]
+name = "hack-assembler"
+edition.workspace = true
+version.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+readme.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description.workspace = true
+categories.workspace = true
+
+[dependencies]
