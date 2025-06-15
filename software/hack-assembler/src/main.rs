@@ -1,3 +1,3 @@
 fn main() {
-    hack_assembler::run();
+    nukopy_hack_assembler::run();
 }

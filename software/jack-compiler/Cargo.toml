@@ -1,6 +1,6 @@
 [package]
-name = "jack-compiler"
-publish = false
+name = "nukopy-jack-compiler"
+publish = true
 edition.workspace = true
 version.workspace = true
 rust-version.workspace = true

@@ -1,3 +1,3 @@
 fn main() {
-    jack_compiler::run();
+    nukopy_jack_compiler::run();
 }

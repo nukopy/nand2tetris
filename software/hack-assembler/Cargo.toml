@@ -1,6 +1,6 @@
 [package]
-name = "hack-assembler"
-publish = false
+name = "nukopy-hack-assembler"
+publish = true
 edition.workspace = true
 version.workspace = true
 rust-version.workspace = true
