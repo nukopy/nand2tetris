@@ -1,3 +1,3 @@
 fn main() {
-    println!("Hello, jack-compiler!");
+    jack_compiler::run();
 }

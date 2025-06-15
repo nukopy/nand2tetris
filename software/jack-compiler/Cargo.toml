@@ -1,5 +1,6 @@
 [package]
 name = "jack-compiler"
+publish = false
 edition.workspace = true
 version.workspace = true
 rust-version.workspace = true
