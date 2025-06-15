@@ -79,7 +79,7 @@ Created ./submissions/project2.zip with HDL files.
 
 ### for Cargo
 
-#### install tools
+#### Install tools
 
 - Install just
 
@@ -91,6 +91,20 @@ cargo install just
 
 ```sh
 cargo install cargo-workspaces
+```
+
+#### Testing
+
+- Run tests for all workspaces
+
+```sh
+cargo test --workspace
+```
+
+- Run tests for a specific package (= member of the workspace)
+
+```sh
+cargo test -p hack-assembler
 ```
 
 #### `cargo-workspaces` commands
