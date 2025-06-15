@@ -153,7 +153,7 @@ just version
 # pushing the tag to remote repository & generate release notes
 just release <tag>
 
-# publishh to crates.io
+# publish to crates.io
 just publish
 ```
 
