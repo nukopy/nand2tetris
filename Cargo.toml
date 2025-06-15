@@ -15,8 +15,3 @@ readme = "README.md"
 repository = "https://github.com/nukopy/nand2tetris"
 homepage = "https://github.com/nukopy/nand2tetris"
 description = "Software for Nand2Tetris"
-categories = [
-    "nand2tetris",
-    "hack-assembler",
-    "jack-compiler",
-]

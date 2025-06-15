@@ -1,6 +1,15 @@
 [package]
 name = "nukopy-jack-compiler"
 publish = true
+categories = [
+    "command-line-interface",
+]
+keywords = [
+    "nand2tetris",
+    "jack",
+    "jack-compiler",
+    "compiler",
+]
 edition.workspace = true
 version.workspace = true
 rust-version.workspace = true
@@ -10,6 +19,5 @@ readme.workspace = true
 repository.workspace = true
 homepage.workspace = true
 description.workspace = true
-categories.workspace = true
 
 [dependencies]
