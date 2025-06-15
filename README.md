@@ -24,6 +24,7 @@
 - Rust 1.85.1 (4eb161250 2025-03-15)
 - just 1.40.0
 - cargo-workspaces 0.4.0
+- gh version 2.67.0 (2025-02-11)
 
 ## Commands
 
